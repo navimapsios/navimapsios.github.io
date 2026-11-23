@@ -162,4 +162,43 @@ retryButton.addEventListener("click", () => {
     loadLatestRelease({ ignoreCache: true });
 });
 
+document.querySelectorAll("[data-ios-target]").forEach(button => {
+    button.addEventListener("click", () => {
+        const targetId = button.dataset.iosTarget;
+
+        document.querySelectorAll("[data-ios-target]").forEach(item => {
+            const active = item === button;
+            item.classList.toggle("active", active);
+            item.setAttribute("aria-selected", String(active));
+        });
+
+        document.querySelectorAll(".ios-panel").forEach(panel => {
+            const active = panel.id === targetId;
+            panel.classList.toggle("active", active);
+            panel.hidden = !active;
+        });
+    });
+});
+
+document.querySelectorAll("[data-copy-target]").forEach(button => {
+    button.addEventListener("click", async () => {
+        const target = document.getElementById(button.dataset.copyTarget);
+        if (!target) {
+            return;
+        }
+
+        const originalText = button.textContent;
+        try {
+            await navigator.clipboard.writeText(target.textContent.trim());
+            button.textContent = "Đã sao chép";
+        } catch {
+            button.textContent = "Không sao chép được";
+        }
+
+        window.setTimeout(() => {
+            button.textContent = originalText;
+        }, 1800);
+    });
+});
+
 loadLatestRelease();

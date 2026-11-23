@@ -241,6 +241,10 @@ h2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.three-columns {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .card {
     padding: 22px;
 }
@@ -263,6 +267,167 @@ h2 {
 
 .text-link:hover {
     text-decoration: underline;
+}
+
+.inline-link {
+    margin-top: 0;
+}
+
+.setup-guide {
+    margin: 18px 0;
+}
+
+.setup-intro {
+    max-width: 720px;
+}
+
+.ios-picker {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin: 20px 0;
+    padding: 6px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: #f5f8fb;
+}
+
+.ios-choice {
+    border: 0;
+    border-radius: 10px;
+    padding: 12px 10px;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.ios-choice.active {
+    color: #fff;
+    background: var(--accent);
+}
+
+.ios-panel[hidden] {
+    display: none;
+}
+
+.ios-panel {
+    padding-top: 4px;
+}
+
+.setup-badge {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #e9f8ef;
+    color: #176534;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.warning-badge {
+    background: var(--warning-bg);
+    color: var(--warning-text);
+}
+
+.setup-steps {
+    margin: 18px 0 0;
+    padding-left: 24px;
+}
+
+.setup-steps li {
+    padding-left: 4px;
+    line-height: 1.65;
+}
+
+.setup-steps li + li {
+    margin-top: 14px;
+}
+
+.inline-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.button.compact {
+    width: auto;
+    min-height: 42px;
+    padding: 10px 14px;
+    font-size: 14px;
+}
+
+.path {
+    font-weight: 700;
+    color: var(--text);
+}
+
+.command-box {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+    margin-top: 10px;
+    padding: 11px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #f5f8fb;
+}
+
+.command-box code {
+    padding: 0;
+    overflow-wrap: anywhere;
+    background: transparent;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.copy-command {
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    padding: 8px 10px;
+    background: #fff;
+    color: var(--accent-dark);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.trouble-box {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fbfcfe;
+}
+
+.trouble-box summary {
+    cursor: pointer;
+    font-weight: 800;
+}
+
+.trouble-box p {
+    margin: 12px 0 0;
+}
+
+.setup-note,
+.official-note {
+    margin-top: 18px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #f5f8fb;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.official-note a {
+    color: var(--accent-dark);
+    font-weight: 700;
 }
 
 .compatibility,
@@ -346,8 +511,21 @@ footer button {
     }
 
     .two-columns,
+    .three-columns,
     .actions {
         grid-template-columns: 1fr;
+    }
+
+    .ios-picker {
+        grid-template-columns: 1fr;
+    }
+
+    .command-box {
+        grid-template-columns: 1fr;
+    }
+
+    .copy-command {
+        width: 100%;
     }
 
     .compat-row {

@@ -46,52 +46,98 @@
             <span>SideStore có thể làm mới chữ ký khi được thiết lập đúng. Safari không thể tự cài một IPA chưa được ký cho thiết bị của bạn.</span>
         </section>
 
-        <section class="grid two-columns">
-            <article class="card">
-                <p class="step-number">01</p>
-                <h2>Thiết lập SideInstaller</h2>
-                <p>Trên iOS 27 trở lên, SideInstaller hiện hỗ trợ thiết lập trực tiếp trên iPhone. iOS 26 cần tạo pairing file một lần trên máy tính theo hướng dẫn của SideInstaller. Không dùng mục Legacy Enterprise certificates. Hãy dùng luồng tự ký bằng Apple ID của chính bạn.</p>
-                <a class="text-link" href="https://sideinstaller.net/install.html" target="_blank" rel="noopener noreferrer">Mở trang cài SideInstaller →</a>
-            </article>
+        <section class="card setup-guide" id="sideinstaller-setup">
+            <p class="step-number">01</p>
+            <h2>Thiết lập SideInstaller ngay trên trang này</h2>
+            <p class="setup-intro">Chọn phiên bản iOS của iPhone. Làm lần lượt các bước bên dưới, không cần tự tìm hướng dẫn trên website SideInstaller.</p>
 
+            <div class="ios-picker" role="tablist" aria-label="Chọn phiên bản iOS">
+                <button class="ios-choice active" type="button" role="tab" aria-selected="true" data-ios-target="ios27">iOS 27+</button>
+                <button class="ios-choice" type="button" role="tab" aria-selected="false" data-ios-target="ios264">iOS 26.4–26.7</button>
+                <button class="ios-choice" type="button" role="tab" aria-selected="false" data-ios-target="ios174">iOS 17.4–26.3</button>
+            </div>
+
+            <div class="ios-panel active" id="ios27" role="tabpanel">
+                <div class="setup-badge">Không cần máy tính</div>
+                <ol class="setup-steps">
+                    <li>
+                        <strong>Cài 2 ứng dụng miễn phí từ App Store.</strong>
+                        <div class="inline-actions">
+                            <a class="button compact secondary" href="https://apps.apple.com/app/id6759188481" target="_blank" rel="noopener noreferrer">Cài Open Minis</a>
+                            <a class="button compact secondary" href="https://apps.apple.com/app/id6755608044" target="_blank" rel="noopener noreferrer">Cài LocalDevVPN</a>
+                        </div>
+                    </li>
+                    <li><strong>Bật Developer Mode:</strong> vào <span class="path">Cài đặt › Quyền riêng tư &amp; Bảo mật › Chế độ nhà phát triển</span>, bật lên và khởi động lại iPhone nếu được yêu cầu.</li>
+                    <li><strong>Cho Open Minis chạy nền:</strong> vào <span class="path">Cài đặt › Ứng dụng › Open Minis › Vị trí</span> và chọn <strong>Luôn luôn</strong>.</li>
+                    <li><strong>Mở LocalDevVPN</strong> và nhấn kết nối VPN.</li>
+                    <li>
+                        <strong>Mở Open Minis</strong> › biểu tượng Console ở góc trên phải › <strong>Shell Terminal</strong>, sau đó chạy lệnh này:
+                        <div class="command-box">
+                            <code id="sideinstallerCommand">wget -qO- https://raw.githubusercontent.com/FrizzleM/siboot/main/minis/install.sh | sh</code>
+                            <button class="copy-command" type="button" data-copy-target="sideinstallerCommand">Sao chép</button>
+                        </div>
+                    </li>
+                    <li><strong>Làm theo hướng dẫn trên màn hình.</strong> Khi được hỏi, nhập Apple ID của chính bạn và mã xác minh. Giữ Open Minis mở cho đến khi báo hoàn tất.</li>
+                    <li><strong>Mở SideInstaller.</strong> Nếu iPhone yêu cầu tin cậy ứng dụng đã ký, vào <span class="path">Cài đặt › Cài đặt chung › VPN &amp; Quản lý thiết bị</span> và tin cậy Apple ID của bạn.</li>
+                    <li><strong>Quay lại trang Navimaps này</strong> và bấm nút <strong>Cài đặt Navimaps</strong> ở phía trên.</li>
+                </ol>
+
+                <details class="trouble-box">
+                    <summary>Không thấy Developer Mode?</summary>
+                    <p>Kết nối LocalDevVPN, mở Shell Terminal trong Open Minis và chạy:</p>
+                    <div class="command-box">
+                        <code id="developerModeCommand">wget -qO- https://raw.githubusercontent.com/FrizzleM/siboot/main/minis/install.sh | sh -s developer-mode</code>
+                        <button class="copy-command" type="button" data-copy-target="developerModeCommand">Sao chép</button>
+                    </div>
+                    <p>Sau đó kiểm tra lại <span class="path">Cài đặt › Quyền riêng tư &amp; Bảo mật › Chế độ nhà phát triển</span>.</p>
+                </details>
+            </div>
+
+            <div class="ios-panel" id="ios264" role="tabpanel" hidden>
+                <div class="setup-badge warning-badge">Cần máy tính một lần</div>
+                <ol class="setup-steps">
+                    <li>Trên Windows, macOS hoặc Linux, tải <a class="text-link inline-link" href="https://github.com/jkcoxson/idevice_pair/releases/latest" target="_blank" rel="noopener noreferrer">idevice_pair</a>.</li>
+                    <li>Cắm iPhone vào máy tính bằng cáp, mở khóa iPhone và bấm <strong>Tin cậy</strong> nếu được hỏi.</li>
+                    <li>Trong idevice_pair, chọn iPhone › <strong>Remote pairing</strong> › <strong>Create</strong>. Giữ iPhone mở khóa đến khi hoàn tất.</li>
+                    <li>Bấm <strong>Save to file…</strong>, rồi gửi file pairing sang iPhone bằng iCloud Drive, AirDrop hoặc cách chép file khác.</li>
+                    <li>Mở SideInstaller trên iPhone › <strong>Import pairing file</strong> (hoặc Replace) › chọn file vừa tạo.</li>
+                    <li>Kết nối LocalDevVPN, quay lại trang Navimaps và bấm <strong>Cài đặt Navimaps</strong>.</li>
+                </ol>
+                <p class="setup-note">iOS 26.4–26.7 bắt buộc dùng <strong>remote pairing file</strong>; pairing file kiểu cũ không dùng được cho bước này.</p>
+            </div>
+
+            <div class="ios-panel" id="ios174" role="tabpanel" hidden>
+                <div class="setup-badge warning-badge">Cần máy tính một lần</div>
+                <ol class="setup-steps">
+                    <li>Tạo pairing file cho iPhone trên máy tính bằng công cụ pairing tương thích.</li>
+                    <li>Chép pairing file sang iPhone.</li>
+                    <li>Mở SideInstaller › <strong>Import pairing file</strong> › chọn file.</li>
+                    <li>Kết nối LocalDevVPN, quay lại trang Navimaps và bấm <strong>Cài đặt Navimaps</strong>.</li>
+                </ol>
+                <p class="setup-note">SideInstaller hỗ trợ từ iOS 17.4. iOS thấp hơn 17.4 không được SideInstaller hỗ trợ.</p>
+            </div>
+
+            <p class="official-note">Chỉ sử dụng SideInstaller từ nguồn chính thức. Nếu gặp lỗi ngoài các bước trên, <a href="https://sideinstaller.net/help.html" target="_blank" rel="noopener noreferrer">mở trang hỗ trợ chính thức</a>.</p>
+        </section>
+
+        <section class="grid three-columns">
             <article class="card">
                 <p class="step-number">02</p>
                 <h2>Cài Navimaps</h2>
-                <p>Sau khi SideInstaller đã hoạt động, quay lại trang này và nhấn <strong>Cài đặt Navimaps</strong>. SideInstaller sẽ nhận URL IPA, tải ứng dụng và cho bạn ký bằng Apple ID trên thiết bị.</p>
+                <p>Sau khi SideInstaller đã hoạt động, bấm <strong>Cài đặt Navimaps</strong> ở đầu trang. SideInstaller sẽ nhận đúng URL IPA và yêu cầu xác nhận trước khi tải, ký và cài.</p>
             </article>
 
             <article class="card">
                 <p class="step-number">03</p>
-                <h2>Dùng SideStore để làm mới</h2>
-                <p>SideStore ký ứng dụng bằng chứng chỉ phát triển cá nhân và có thể làm mới ứng dụng trước khi thời hạn 7 ngày kết thúc.</p>
-                <a class="text-link" href="https://docs.sidestore.io/docs/installation/install" target="_blank" rel="noopener noreferrer">Hướng dẫn SideStore →</a>
+                <h2>Gia hạn sau 7 ngày</h2>
+                <p>Apple ID miễn phí thường cần làm mới chữ ký sau 7 ngày. Có thể dùng SideStore để làm mới ứng dụng trước khi hết hạn.</p>
             </article>
 
             <article class="card">
                 <p class="step-number">04</p>
                 <h2>Cập nhật Navimaps</h2>
-                <p>Khi có phiên bản mới, mở lại trang này. Website tự đọc release mới nhất có tag dạng <code>ios-vX.Y.Z</code> và đúng file <code>Navimaps.ipa</code>.</p>
+                <p>Khi có bản mới, chỉ cần mở lại trang này. Website tự chọn release iOS mới nhất và cập nhật nút cài đặt.</p>
             </article>
-        </section>
-
-        <section class="card compatibility">
-            <h2>Yêu cầu theo phiên bản iOS</h2>
-            <div class="compat-row">
-                <strong>iOS 27+</strong>
-                <span>SideInstaller có thể tự ghép nối trên thiết bị, không cần máy tính cho bước pairing.</span>
-            </div>
-            <div class="compat-row">
-                <strong>iOS 26.4–26.7</strong>
-                <span>Cần remote pairing file được tạo một lần trên máy tính.</span>
-            </div>
-            <div class="compat-row">
-                <strong>iOS 17.4–26.3</strong>
-                <span>Cần pairing file được tạo một lần trên máy tính.</span>
-            </div>
-            <div class="compat-row">
-                <strong>iOS 17.0–17.3</strong>
-                <span>Navimaps có deployment target iOS 17.0, nhưng SideInstaller hiện không hỗ trợ nhóm phiên bản này. Hãy dùng một công cụ ký tương thích khác.</span>
-            </div>
         </section>
 
         <section class="card limits">
