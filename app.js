@@ -3,7 +3,7 @@ const PUBLIC_RELEASES_PAGE = "https://github.com/navimapsios/navimapsios.github.
 const SIDEINSTALLER_OPEN = "https://sideinstaller.net/open.html?url=";
 const IOS_TAG_PATTERN = /^ios-v(\d+)\.(\d+)\.(\d+)$/;
 const IPA_ASSET_NAME = "Navimaps.ipa";
-const CACHE_KEY = "navimaps-ios-latest-release-v3";
+const CACHE_KEY = "navimaps-ios-latest-release-v4";
 const CACHE_TTL_MS = 15 * 60 * 1000;
 const MAX_PAGES = 10;
 
