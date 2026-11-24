@@ -1,10 +1,11 @@
 const PUBLIC_RELEASES_PAGE = "https://github.com/navimapsios/navimapsios.github.io/releases";
 const SIDEINSTALLER_OPEN = "https://sideinstaller.net/open.html?url=";
 const IOS_TAG_PATTERN = /^ios-v(\d+)\.(\d+)\.(\d+)$/;
-const CACHE_KEY = "navimaps-ios-latest-release-v5";
+const CACHE_KEY = "navimaps-ios-latest-release-v6";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 const releaseVersion = document.getElementById("releaseVersion");
+const releaseBuildNumber = document.getElementById("releaseBuildNumber");
 const releaseStatus = document.getElementById("releaseStatus");
 const releaseSource = document.getElementById("releaseSource");
 const statusDot = document.getElementById("statusDot");
@@ -28,7 +29,12 @@ function getCandidate(manifest) {
         throw new Error("Thông tin IPA không khớp với phiên bản phát hành");
     }
 
-    return { version, tag: manifest.tag, downloadUrl };
+    const buildNumber = String(manifest.build_number ?? "");
+    if (!/^[1-9][0-9]*$/.test(buildNumber)) {
+        throw new Error("Build number không hợp lệ hoặc chưa được công bố");
+    }
+
+    return { version, buildNumber, tag: manifest.tag, downloadUrl };
 }
 
 async function fetchLatestRelease() {
@@ -63,6 +69,7 @@ function saveCachedRelease(candidate) {
         localStorage.setItem(CACHE_KEY, JSON.stringify({
             savedAt: Date.now(),
             version: candidate.version,
+            build_number: candidate.buildNumber,
             download_url: candidate.downloadUrl,
             tag: candidate.tag
         }));
@@ -77,9 +84,10 @@ function setButtonLink(element, href) {
     element.setAttribute("aria-disabled", "false");
 }
 
-function showReady(version, downloadUrl, tag, cached = false) {
+function showReady(version, buildNumber, downloadUrl, tag, cached = false) {
     const sideInstallerUrl = `${SIDEINSTALLER_OPEN}${encodeURIComponent(downloadUrl)}`;
     releaseVersion.textContent = `v${version}`;
+    releaseBuildNumber.textContent = `Build ${buildNumber}`;
     releaseStatus.textContent = "IPA sẵn sàng để tải và ký lại trên iPhone.";
     releaseSource.textContent = `${cached ? "Dữ liệu lưu tạm" : "Navimaps iOS"} · ${tag}`;
     statusDot.classList.remove("error");
@@ -106,18 +114,18 @@ async function loadLatestRelease({ ignoreCache = false } = {}) {
     if (!ignoreCache) {
         const cached = readCachedRelease();
         if (cached) {
-            showReady(cached.version, cached.downloadUrl, cached.tag, true);
+            showReady(cached.version, cached.buildNumber, cached.downloadUrl, cached.tag, true);
         }
     }
 
     try {
         const candidate = await fetchLatestRelease();
         saveCachedRelease(candidate);
-        showReady(candidate.version, candidate.downloadUrl, candidate.tag);
+        showReady(candidate.version, candidate.buildNumber, candidate.downloadUrl, candidate.tag);
     } catch {
         const cached = readCachedRelease();
         if (cached) {
-            showReady(cached.version, cached.downloadUrl, cached.tag, true);
+            showReady(cached.version, cached.buildNumber, cached.downloadUrl, cached.tag, true);
             return;
         }
         showUnavailable("Không tải được thông tin phiên bản. Vui lòng thử lại hoặc mở danh sách bản phát hành trên GitHub.");
