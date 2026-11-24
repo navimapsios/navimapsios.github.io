@@ -1,11 +1,8 @@
-const PUBLIC_RELEASES_API = "https://api.github.com/repos/navimapsios/navimapsios.github.io/releases";
 const PUBLIC_RELEASES_PAGE = "https://github.com/navimapsios/navimapsios.github.io/releases";
 const SIDEINSTALLER_OPEN = "https://sideinstaller.net/open.html?url=";
 const IOS_TAG_PATTERN = /^ios-v(\d+)\.(\d+)\.(\d+)$/;
-const IPA_ASSET_NAME = "Navimaps.ipa";
-const CACHE_KEY = "navimaps-ios-latest-release-v4";
-const CACHE_TTL_MS = 15 * 60 * 1000;
-const MAX_PAGES = 10;
+const CACHE_KEY = "navimaps-ios-latest-release-v5";
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 const releaseVersion = document.getElementById("releaseVersion");
 const releaseStatus = document.getElementById("releaseStatus");
@@ -15,73 +12,38 @@ const installButton = document.getElementById("installButton");
 const downloadButton = document.getElementById("downloadButton");
 const retryButton = document.getElementById("retryButton");
 
-function compareVersions(a, b) {
-    const buildTimestamp = candidate => Math.max(
-        new Date(candidate.release.updated_at || 0).getTime() || 0,
-        new Date(candidate.asset.updated_at || 0).getTime() || 0,
-        new Date(candidate.release.published_at || 0).getTime() || 0,
-        new Date(candidate.release.created_at || 0).getTime() || 0
-    );
-    const buildTimeDifference = buildTimestamp(b) - buildTimestamp(a);
-    if (buildTimeDifference !== 0) {
-        return buildTimeDifference;
+function getCandidate(manifest) {
+    if (!manifest || typeof manifest.tag !== "string") {
+        throw new Error("Thông tin phiên bản không hợp lệ");
     }
 
-    // If timestamps match, use the semantic version as a deterministic tie-breaker.
-    for (let index = 0; index < 3; index += 1) {
-        if (a.versionParts[index] !== b.versionParts[index]) {
-            return b.versionParts[index] - a.versionParts[index];
-        }
-    }
-    return 0;
-}
-
-function getCandidate(release) {
-    if (!release || release.draft || release.prerelease || typeof release.tag_name !== "string") {
-        return null;
-    }
-    const match = IOS_TAG_PATTERN.exec(release.tag_name);
+    const match = IOS_TAG_PATTERN.exec(manifest.tag);
     if (!match) {
-        return null;
+        throw new Error("Mã phiên bản phát hành không hợp lệ");
     }
-    const asset = (release.assets || []).find(item => item && item.name === IPA_ASSET_NAME && item.browser_download_url);
-    if (!asset) {
-        return null;
+
+    const version = `${match[1]}.${match[2]}.${match[3]}`;
+    const downloadUrl = `https://github.com/navimapsios/navimapsios.github.io/releases/download/${manifest.tag}/Navimaps.ipa`;
+    if (manifest.version !== version || manifest.download_url !== downloadUrl) {
+        throw new Error("Thông tin IPA không khớp với phiên bản phát hành");
     }
-    return {
-        release,
-        asset,
-        version: `${match[1]}.${match[2]}.${match[3]}`,
-        versionParts: [Number(match[1]), Number(match[2]), Number(match[3])]
-    };
+
+    return { version, tag: manifest.tag, downloadUrl };
 }
 
-async function fetchReleasePages() {
-    const candidates = [];
-    for (let page = 1; page <= MAX_PAGES; page += 1) {
-        const response = await fetch(`${PUBLIC_RELEASES_API}?per_page=100&page=${page}`, {
-            headers: { Accept: "application/vnd.github+json" },
-            cache: "no-store"
-        });
-        if (!response.ok) {
-            throw new Error(`GitHub API ${response.status}`);
-        }
-        const releases = await response.json();
-        if (!Array.isArray(releases)) {
-            throw new Error("GitHub API returned an unexpected response");
-        }
-        for (const release of releases) {
-            const candidate = getCandidate(release);
-            if (candidate) {
-                candidates.push(candidate);
-            }
-        }
-        if (releases.length < 100) {
-            break;
-        }
+async function fetchLatestRelease() {
+    const manifestUrl = new URL("latest-release.json", document.baseURI);
+    manifestUrl.searchParams.set("_", Date.now().toString());
+
+    const response = await fetch(manifestUrl, {
+        headers: { Accept: "application/json" },
+        cache: "no-store"
+    });
+    if (!response.ok) {
+        throw new Error(`Tệp phiên bản trả về HTTP ${response.status}`);
     }
-    candidates.sort(compareVersions);
-    return candidates[0] || null;
+
+    return getCandidate(await response.json());
 }
 
 function readCachedRelease() {
@@ -90,7 +52,7 @@ function readCachedRelease() {
         if (!cached || Date.now() - cached.savedAt > CACHE_TTL_MS) {
             return null;
         }
-        return cached;
+        return getCandidate(cached);
     } catch {
         return null;
     }
@@ -101,8 +63,8 @@ function saveCachedRelease(candidate) {
         localStorage.setItem(CACHE_KEY, JSON.stringify({
             savedAt: Date.now(),
             version: candidate.version,
-            downloadUrl: candidate.asset.browser_download_url,
-            tag: candidate.release.tag_name
+            download_url: candidate.downloadUrl,
+            tag: candidate.tag
         }));
     } catch {
         // The page works without local storage.
@@ -149,20 +111,16 @@ async function loadLatestRelease({ ignoreCache = false } = {}) {
     }
 
     try {
-        const candidate = await fetchReleasePages();
-        if (!candidate) {
-            showUnavailable("Chưa tìm thấy release ios-vX.Y.Z có asset Navimaps.ipa.");
-            return;
-        }
+        const candidate = await fetchLatestRelease();
         saveCachedRelease(candidate);
-        showReady(candidate.version, candidate.asset.browser_download_url, candidate.release.tag_name);
+        showReady(candidate.version, candidate.downloadUrl, candidate.tag);
     } catch {
         const cached = readCachedRelease();
         if (cached) {
             showReady(cached.version, cached.downloadUrl, cached.tag, true);
             return;
         }
-        showUnavailable("Không đọc được GitHub Releases. Có thể API đang giới hạn, mạng lỗi hoặc IPA chưa được phát hành.");
+        showUnavailable("Không tải được thông tin phiên bản. Vui lòng thử lại hoặc mở danh sách bản phát hành trên GitHub.");
     } finally {
         retryButton.disabled = false;
     }
