@@ -3,7 +3,7 @@ const PUBLIC_RELEASES_PAGE = "https://github.com/navimapsios/navimapsios.github.
 const SIDEINSTALLER_OPEN = "https://sideinstaller.net/open.html?url=";
 const IOS_TAG_PATTERN = /^ios-v(\d+)\.(\d+)\.(\d+)$/;
 const IPA_ASSET_NAME = "Navimaps.ipa";
-const CACHE_KEY = "navimaps-ios-latest-release-v2";
+const CACHE_KEY = "navimaps-ios-latest-release-v3";
 const CACHE_TTL_MS = 15 * 60 * 1000;
 const MAX_PAGES = 10;
 
@@ -16,13 +16,24 @@ const downloadButton = document.getElementById("downloadButton");
 const retryButton = document.getElementById("retryButton");
 
 function compareVersions(a, b) {
+    const buildTimestamp = candidate => Math.max(
+        new Date(candidate.release.updated_at || 0).getTime() || 0,
+        new Date(candidate.asset.updated_at || 0).getTime() || 0,
+        new Date(candidate.release.published_at || 0).getTime() || 0,
+        new Date(candidate.release.created_at || 0).getTime() || 0
+    );
+    const buildTimeDifference = buildTimestamp(b) - buildTimestamp(a);
+    if (buildTimeDifference !== 0) {
+        return buildTimeDifference;
+    }
+
+    // If timestamps match, use the semantic version as a deterministic tie-breaker.
     for (let index = 0; index < 3; index += 1) {
         if (a.versionParts[index] !== b.versionParts[index]) {
             return b.versionParts[index] - a.versionParts[index];
         }
     }
-    return new Date(b.release.published_at || b.release.created_at || 0).getTime()
-        - new Date(a.release.published_at || a.release.created_at || 0).getTime();
+    return 0;
 }
 
 function getCandidate(release) {
