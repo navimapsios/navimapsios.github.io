@@ -1,11 +1,12 @@
 const PUBLIC_RELEASES_PAGE = "https://github.com/navimapsios/navimapsios.github.io/releases";
 const SIDEINSTALLER_OPEN = "https://sideinstaller.net/open.html?url=";
 const IOS_TAG_PATTERN = /^ios-v(\d+)\.(\d+)\.(\d+)$/;
-const CACHE_KEY = "navimaps-ios-latest-release-v6";
+const CACHE_KEY = "navimaps-ios-latest-release-v7";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 const releaseVersion = document.getElementById("releaseVersion");
 const releaseBuildNumber = document.getElementById("releaseBuildNumber");
+const releaseBuildTime = document.getElementById("releaseBuildTime");
 const releaseStatus = document.getElementById("releaseStatus");
 const releaseSource = document.getElementById("releaseSource");
 const statusDot = document.getElementById("statusDot");
@@ -34,7 +35,12 @@ function getCandidate(manifest) {
         throw new Error("Build number không hợp lệ hoặc chưa được công bố");
     }
 
-    return { version, buildNumber, tag: manifest.tag, downloadUrl };
+    const builtAt = String(manifest.built_at ?? "");
+    if (!builtAt || Number.isNaN(new Date(builtAt).getTime())) {
+        throw new Error("Thời gian build không hợp lệ hoặc chưa được công bố");
+    }
+
+    return { version, buildNumber, builtAt, tag: manifest.tag, downloadUrl };
 }
 
 async function fetchLatestRelease() {
@@ -70,6 +76,7 @@ function saveCachedRelease(candidate) {
             savedAt: Date.now(),
             version: candidate.version,
             build_number: candidate.buildNumber,
+            built_at: candidate.builtAt,
             download_url: candidate.downloadUrl,
             tag: candidate.tag
         }));
@@ -84,10 +91,23 @@ function setButtonLink(element, href) {
     element.setAttribute("aria-disabled", "false");
 }
 
-function showReady(version, buildNumber, downloadUrl, tag, cached = false) {
+function formatBuildTime(builtAt) {
+    return new Intl.DateTimeFormat("vi-VN", {
+        timeZone: "Asia/Ho_Chi_Minh",
+        hour: "2-digit",
+        minute: "2-digit",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour12: false
+    }).format(new Date(builtAt));
+}
+
+function showReady(version, buildNumber, builtAt, downloadUrl, tag, cached = false) {
     const sideInstallerUrl = `${SIDEINSTALLER_OPEN}${encodeURIComponent(downloadUrl)}`;
     releaseVersion.textContent = `v${version}`;
     releaseBuildNumber.textContent = `Build ${buildNumber}`;
+    releaseBuildTime.textContent = `Thời gian build: ${formatBuildTime(builtAt)}`;
     releaseStatus.textContent = "IPA sẵn sàng để tải và ký lại trên iPhone.";
     releaseSource.textContent = `${cached ? "Dữ liệu lưu tạm" : "Navimaps iOS"} · ${tag}`;
     statusDot.classList.remove("error");
@@ -98,6 +118,8 @@ function showReady(version, buildNumber, downloadUrl, tag, cached = false) {
 
 function showUnavailable(message) {
     releaseVersion.textContent = "Chưa có IPA công khai";
+    releaseBuildNumber.textContent = "Build —";
+    releaseBuildTime.textContent = "Thời gian build —";
     releaseStatus.textContent = message;
     releaseSource.innerHTML = `Xem release tại <a href="${PUBLIC_RELEASES_PAGE}" target="_blank" rel="noopener noreferrer">GitHub</a>.`;
     statusDot.classList.remove("ready");
@@ -107,6 +129,8 @@ function showUnavailable(message) {
 async function loadLatestRelease({ ignoreCache = false } = {}) {
     retryButton.disabled = true;
     releaseVersion.textContent = "Đang kiểm tra…";
+    releaseBuildNumber.textContent = "Build —";
+    releaseBuildTime.textContent = "Thời gian build —";
     releaseStatus.textContent = "Đang tìm bản phát hành iOS hợp lệ.";
     releaseSource.textContent = "";
     statusDot.classList.remove("ready", "error");
@@ -114,18 +138,18 @@ async function loadLatestRelease({ ignoreCache = false } = {}) {
     if (!ignoreCache) {
         const cached = readCachedRelease();
         if (cached) {
-            showReady(cached.version, cached.buildNumber, cached.downloadUrl, cached.tag, true);
+            showReady(cached.version, cached.buildNumber, cached.builtAt, cached.downloadUrl, cached.tag, true);
         }
     }
 
     try {
         const candidate = await fetchLatestRelease();
         saveCachedRelease(candidate);
-        showReady(candidate.version, candidate.buildNumber, candidate.downloadUrl, candidate.tag);
+        showReady(candidate.version, candidate.buildNumber, candidate.builtAt, candidate.downloadUrl, candidate.tag);
     } catch {
         const cached = readCachedRelease();
         if (cached) {
-            showReady(cached.version, cached.buildNumber, cached.downloadUrl, cached.tag, true);
+            showReady(cached.version, cached.buildNumber, cached.builtAt, cached.downloadUrl, cached.tag, true);
             return;
         }
         showUnavailable("Không tải được thông tin phiên bản. Vui lòng thử lại hoặc mở danh sách bản phát hành trên GitHub.");
