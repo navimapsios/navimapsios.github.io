@@ -1,9 +1,9 @@
 {
-  "version": "1.0.5",
-  "build_number": "60",
-  "built_at": "2026-11-28T09:23:15Z",
-  "tag": "ios-v1.0.5",
-  "download_url": "https://github.com/navimapsios/navimapsios.github.io/releases/download/ios-v1.0.5/Navimaps.ipa",
-  "release_url": "https://github.com/navimapsios/navimapsios.github.io/releases/tag/ios-v1.0.5",
-  "updated_at": "2026-11-28T09:23:35Z"
+  "version": "1.0.0",
+  "build_number": "1",
+  "built_at": "2026-11-28T11:21:13Z",
+  "tag": "ios-v1.0.0",
+  "download_url": "https://github.com/navimapsios/navimapsios.github.io/releases/download/ios-v1.0.0/Navimaps.ipa",
+  "release_url": "https://github.com/navimapsios/navimapsios.github.io/releases/tag/ios-v1.0.0",
+  "updated_at": "2026-11-28T11:21:32Z"
 }
